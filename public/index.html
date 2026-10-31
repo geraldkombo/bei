@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>bei - uliza kabla ya kulipa</title>
+<link rel="icon" type="image/svg+xml" href="/logo.svg">
+<style>
+  :root { color-scheme: light dark; }
+  body { font-family: system-ui, sans-serif; margin: 0 auto; max-width: 960px; padding: 1rem; }
+  h1 { font-size: 1.4rem; } h1 small { color: #888; font-weight: normal; }
+  h2 { font-size: 1.05rem; margin-top: 1.4rem; }
+  table { border-collapse: collapse; width: 100%; margin-top: .4rem; }
+  th, td { text-align: left; padding: .35rem .55rem; border-bottom: 1px solid #44444422; font-size: .87rem; }
+  .festive { color: #b26a00; font-weight: 600; }
+  form { display: flex; gap: .5rem; flex-wrap: wrap; align-items: center; margin: .8rem 0; padding: .7rem; border: 1px dashed #44444455; border-radius: 8px; }
+  input, select, button { padding: .4rem .55rem; border-radius: 6px; border: 1px solid #44444455; font-size: .87rem; }
+  button { cursor: pointer; background: #0a7d33; color: #fff; border: none; }
+  #msg { font-size: .85rem; color: #888; min-height: 1.2em; }
+  .grid { display: grid; grid-template-columns: 1fr 1fr; gap: 1rem; } @media (max-width: 700px) { .grid { grid-template-columns: 1fr; } }
+</style>
+</head>
+<body>
+<h1>bei <small>uliza bei kabla ya kulipa - crowdsourced prices for Kenya</small></h1>
+<div id="msg"></div>
+
+<form id="repForm">
+  <input name="phone" placeholder="Reporter phone (+2547...)" required size="18">
+  <select name="itemId" id="itemSelect"></select>
+  <input name="amount" type="number" min="1" placeholder="KES" required style="width:90px">
+  <button>Report price</button>
+</form>
+
+<div id="cats"></div>
+
+<div class="grid">
+  <div>
+    <h2>Recent reports</h2>
+    <table><thead><tr><th>Item</th><th>KES</th><th>Phone</th></tr></thead><tbody id="reports"></tbody></table>
+  </div>
+  <div>
+    <h2>Top reporters</h2>
+    <table><thead><tr><th>Phone</th><th>Reports</th><th>Points</th><th>Airtime earned</th></tr></thead><tbody id="board"></tbody></table>
+  </div>
+</div>
+
+<script>
+const $ = (id) => document.getElementById(id);
+function range(i) {
+  const c = i.crowd;
+  if (c.count >= 3) return `KES ${c.low}-${c.high} (med ${c.median}, ${c.count} reports)`;
+  return `KES ${i.seed_low}-${i.seed_high} (typical)`;
+}
+async function load() {
+  const s = await (await fetch("/api/summary")).json();
+  $("cats").innerHTML = s.categories.map((cat) =>
+    `<h2>${cat.label}</h2><table><thead><tr><th>Item</th><th>Current</th><th>Festive</th></tr></thead><tbody>` +
+    cat.items.map((i) =>
+      `<tr><td>${i.name}${i.note ? ` <small title="${i.note}">&#9432;</small>` : ""}</td><td>${range(i)}</td>` +
+      `<td class="festive">${i.festive_low ? `${i.festive_low}-${i.festive_high}` : "-"}</td></tr>`
+    ).join("") + "</tbody></table>"
+  ).join("");
+  const opts = s.categories.flatMap((c) => c.items.map((i) => `<option value="${i.id}">${i.name}</option>`));
+  $("itemSelect").innerHTML = opts.join("");
+  $("msg").textContent = s.smsDryRun ? "SMS/Airtime: dry-run (no AT keys)" : "SMS/Airtime: Africa's Talking live";
+  const r = await (await fetch("/api/reports")).json();
+  $("reports").innerHTML = r.reports.map((x) => `<tr><td>${x.name}</td><td>${x.amount}</td><td>${x.phone}</td></tr>`).join("") || "<tr><td colspan=3>no crowd reports yet</td></tr>";
+  $("board").innerHTML = r.leaderboard.map((x) => `<tr><td>${x.phone}</td><td>${x.reports}</td><td>${x.points}</td><td>KES ${x.airtime_awarded}</td></tr>`).join("") || "<tr><td colspan=4>none yet</td></tr>";
+}
+$("repForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const body = Object.fromEntries(new FormData(e.target));
+  body.itemId = Number(body.itemId); body.amount = Number(body.amount);
+  const r = await fetch("/api/report", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify(body) });
+  $("msg").textContent = r.ok ? "recorded - asante!" : "error";
+  load();
+});
+load(); setInterval(load, 5000);
+</script>
+</body>
+</html>

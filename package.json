@@ -1,0 +1,24 @@
+{
+  "name": "bei",
+  "version": "1.0.0",
+  "description": "Uliza bei kabla ya kulipa. Crowdsourced fares & prices on USSD + SMS for Kenya - matatu, festive travel, food, forex. Airtime rewards for reporters.",
+  "type": "module",
+  "main": "src/server.js",
+  "scripts": {
+    "start": "node src/server.js",
+    "test": "node --test"
+  },
+  "engines": {
+    "node": ">=22.5"
+  },
+  "dependencies": {
+    "africastalking": "^0.7.3",
+    "express": "^4.21.2"
+  },
+  "overrides": {
+    "axios": "^1.21.0",
+    "lodash": "^4.18.1",
+    "joi": "^18.3.0"
+  },
+  "license": "MIT"
+}
