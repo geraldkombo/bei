@@ -59,25 +59,20 @@ curl -d "sessionId=demo&phoneNumber=+254712345678&serviceCode=*384*23#&text=" ht
 
 Node 24 (built-in `node:sqlite` — no external database), Express, `africastalking` SDK (SMS + Airtime). Uses **3 AT products: USSD, SMS, Airtime**.
 
-## Docker / Marketplace
+## Docker
 
 ```bash
-docker build -t <registry>/<user>/bei:1.0.0 .
-docker run -p 3000:3000 -e AT_USERNAME=... -e AT_API_KEY=... <image>
+docker build -t bei:1.0.0 .
+docker run -p 3000:3000 -v bei-data:/data -e AT_USERNAME=... -e AT_API_KEY=... bei:1.0.0
 ```
 
-Submission checklist (marketplace.africastalking.dev → Create Your Own Plugin):
+Configuration:
 
-- [x] Containerized, pushes to AT registry
-- [x] Built on AT products: USSD, Bulk SMS, Airtime
-- [x] Reusable: one deploy per town, SACCO, market association or tour operator — each instance seeds its own routes and items
-- [x] Env vars: `AT_USERNAME`, `AT_API_KEY`, `BEI_REWARD_EVERY`, `PORT`, `BEI_DB`
-- [x] Database need: none (embedded SQLite on the `/data` volume)
-- [ ] Pricing plan: KES 500/month (SACCOs, tour operators, market associations, media houses)
-- [ ] Logo + descriptions (form)
-- [ ] Tags: Fintech/Other; products USSD + Bulk SMS + Airtime
+- Env vars: `AT_USERNAME`, `AT_API_KEY`, `BEI_REWARD_EVERY`, `PORT`, `BEI_DB`
+- Database: none required (embedded SQLite on the `/data` volume)
+- Multi-instance: one deploy per town, SACCO, market association or tour operator — each instance seeds its own routes and items
 
-## Roadmap (post-hackathon)
+## Roadmap
 
 - Voice: call to hear today's fares (low-literacy + driving users)
 - Premium SMS short code: text `BEI MOMBASA` to 12345
