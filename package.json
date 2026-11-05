@@ -12,8 +12,8 @@
     "node": ">=22.5"
   },
   "dependencies": {
-    "africastalking": "^0.7.3",
-    "express": "^4.21.2"
+    "africastalking": "^0.8.4",
+    "express": "^5.3.0"
   },
   "overrides": {
     "axios": "^1.21.0",
